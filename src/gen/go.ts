@@ -1,5 +1,5 @@
 import { Field, Struct, Type, TypeDeclaration } from '../types';
-import { snakeToCamel, uppercaseFirst } from '../utils';
+import { to_pascal_case, to_snake_case } from "../utils";
 
 
 export function render_type(t: Type, type_namespace?: string): string {
@@ -59,16 +59,16 @@ export function render_type(t: Type, type_namespace?: string): string {
 
 function render_struct_field(f: Field, kind: TypeDeclKind): string {
     if (kind == "json") {
-        return `${uppercaseFirst(snakeToCamel(f.name))} ${render_type(f.type)} \`json:"${f.name}${f.type.tag =="option" ? ",omitempty": ""}"\``;
+        return `${to_pascal_case(f.name)} ${render_type(f.type)} \`json:"${f.name}${f.type.tag =="option" ? ",omitempty": ""}"\``;
     } else {
-        return `${uppercaseFirst(snakeToCamel(f.name))} ${render_type(f.type)} \`schema:"${f.name}"\``;
+        return `${to_pascal_case(f.name)} ${render_type(f.type)} \`schema:"${f.name}"\``;
     }
 }
 
 function gen_struct_union_variant(name: string, variant: Struct, kind: TypeDeclKind): string {
-    return `type ${variant.name} struct {\n    ${variant.fields.map(f => render_struct_field(f, kind)).join("\n    ")}\n}\n
-
-func (*${variant.name}) sealed${name}() {}`
+    return `type ${name}${variant.name} struct {
+    ${variant.fields.map(f => render_struct_field(f, kind)).join("\n    ")}
+}`
 }
 
 
@@ -82,13 +82,20 @@ export function gen_type_declaration(decl: TypeDeclaration, kind: TypeDeclKind )
             r += `type ${decl.name} ${render_type(decl.type)}`;
             break;
         case "struct_union":
-            r += `//go-sumtype:decl ${decl.name}
+            r += `
+type ${decl.name}Tag string
 
-type ${decl.name} interface {
-    sealed${decl.name}()
+const (
+    ${decl.variants.map((v,i) => `${decl.name}${to_pascal_case(v.name)}Tag${i ==0? " "+decl.name+"Tag": ""} = "${to_pascal_case(v.name)}"`).join("\n    ")}
+)
+
+${decl.variants.map(v => gen_struct_union_variant(decl.name, v, kind)).join("\n")}
+
+type ${decl.name} struct {
+    Tag ${decl.name}Tag \`json:"type"\`
+    ${decl.variants.map(v => `${to_pascal_case(v.name)} *${decl.name}${to_pascal_case(v.name)}`).join("\n    ")}
 }
-
-${decl.variants.map(v => gen_struct_union_variant(decl.name, v, kind)).join("\n")}`;
+`;
             break;
         case "struct":
             r += `type ${decl.name} struct {\n    ${decl.fields.map(f => render_struct_field(f, kind)).join("\n    ")}\n}\n`;

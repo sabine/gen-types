@@ -119,7 +119,7 @@ export type TypeDeclaration = TypeAlias | Struct | StringEnum | IntEnum | Struct
 export function StructUnion(name: string | TypeName, variants: Struct[]): StructUnion {
     return {
         tag: "struct_union",
-        name: (typeof name === "string" ? name : name.name),
+        name: (typeof name == "string" ? name : name.name),
         variants: variants,
     };
 }
@@ -127,7 +127,7 @@ export function StructUnion(name: string | TypeName, variants: Struct[]): Struct
 export function Struct(name: string | TypeName, fields: Field[]): Struct {
     return {
         tag: "struct",
-        name: (typeof name === "string" ? name : name.name),
+        name: (typeof name == "string" ? name : name.name),
         fields: fields,
     };
 }

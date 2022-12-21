@@ -2,9 +2,10 @@
   "name": "gen-types",
   "version": "0.1.0",
   "description": "generate different types from a central spec",
-  "main": "index.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/sabine/gen-types/issues"
   },
-  "homepage": "https://github.com/sabine/gen-types#readme"
+  "homepage": "https://github.com/sabine/gen-types#readme",
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
 }
